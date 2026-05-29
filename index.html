@@ -3,226 +3,330 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>ROI Annotation Portal — Schüle Lab</title>
+<title>Brain Region Selection — Schüle Lab</title>
 <style>
-:root { --bg: #0d1117; --card: #161b22; --border: #30363d; --text: #e6edf3; --accent: #00e676; --gold: #ffd700; --blue: #58a6ff; --red: #ff4444; }
+:root { --bg: #f8f9fa; --card: #fff; --border: #e1e4e8; --text: #1f2328; --accent: #0969da; --green: #1a7f37; --gold: #9a6700; --red: #cf222e; --muted: #656d76; }
 * { box-sizing: border-box; margin: 0; padding: 0; }
-body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); }
-.header { background: linear-gradient(135deg, #0d1117 0%, #161b22 100%); padding: 20px 30px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 15px; }
-.header h1 { font-size: 24px; color: var(--accent); }
-.header .subtitle { color: #8b949e; font-size: 14px; }
-.logo { width: 36px; height: 36px; background: var(--accent); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 20px; }
-.layout { display: grid; grid-template-columns: 320px 1fr 380px; height: calc(100vh - 70px); }
-.panel { border-right: 1px solid var(--border); overflow-y: auto; padding: 15px; }
-.panel h2 { font-size: 16px; color: var(--gold); margin-bottom: 12px; }
-.search { width: 100%; padding: 8px 12px; background: var(--card); border: 1px solid var(--border); border-radius: 6px; color: var(--text); font-size: 14px; margin-bottom: 12px; outline: none; }
-.search:focus { border-color: var(--accent); }
-.region-item { padding: 6px 10px; border-radius: 6px; cursor: pointer; font-size: 13px; display: flex; align-items: center; gap: 8px; margin-bottom: 2px; transition: background 0.15s; }
-.region-item:hover { background: #21262d; }
-.region-item.selected { background: #1a3a2a; border: 1px solid var(--accent); }
-.region-item .dot { width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0; }
-.region-item .name { flex: 1; }
-.region-item .acr { color: var(--blue); font-weight: 600; min-width: 40px; }
-.depth-0 { padding-left: 5px; font-weight: 700; }
-.depth-1 { padding-left: 15px; font-weight: 600; }
-.depth-2 { padding-left: 25px; }
-.depth-3 { padding-left: 35px; font-size: 12px; }
-.depth-4 { padding-left: 45px; font-size: 12px; color: #8b949e; }
-.viewer { background: #000; display: flex; flex-direction: column; }
-.viewer iframe { flex: 1; border: none; }
-.viewer-label { padding: 8px 15px; background: var(--card); color: #8b949e; font-size: 12px; border-bottom: 1px solid var(--border); }
-.right-panel { padding: 15px; overflow-y: auto; }
-.roi-card { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 12px; margin-bottom: 10px; }
-.roi-card h3 { font-size: 14px; color: var(--accent); margin-bottom: 6px; }
-.roi-card .meta { font-size: 12px; color: #8b949e; margin-bottom: 8px; }
-.roi-card select, .roi-card input { width: 100%; padding: 6px 8px; background: var(--bg); border: 1px solid var(--border); border-radius: 4px; color: var(--text); font-size: 13px; margin-top: 4px; }
-.roi-card select { cursor: pointer; }
-.roi-card label { font-size: 12px; color: #8b949e; display: block; margin-top: 6px; }
-.roi-card .remove { color: var(--red); cursor: pointer; font-size: 12px; float: right; }
-.btn { padding: 8px 16px; border-radius: 6px; border: none; cursor: pointer; font-size: 14px; font-weight: 600; width: 100%; margin-top: 10px; }
-.btn-export { background: var(--accent); color: #000; }
-.btn-export:hover { background: #00c964; }
-.badge { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 600; }
-.badge-primary { background: #1a3a2a; color: var(--accent); }
-.badge-secondary { background: #2a2a1a; color: var(--gold); }
-.badge-tertiary { background: #1a1a2a; color: var(--blue); }
-.count { background: var(--accent); color: #000; padding: 2px 8px; border-radius: 10px; font-size: 12px; font-weight: 700; }
-.empty-state { text-align: center; padding: 40px 20px; color: #8b949e; }
-.empty-state .icon { font-size: 48px; margin-bottom: 10px; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); line-height: 1.5; }
+
+.top-bar { background: #24292f; color: #fff; padding: 12px 24px; display: flex; align-items: center; gap: 12px; }
+.top-bar h1 { font-size: 18px; font-weight: 600; }
+.top-bar .tag { background: var(--green); color: #fff; padding: 2px 10px; border-radius: 12px; font-size: 12px; font-weight: 600; }
+
+.container { max-width: 1100px; margin: 0 auto; padding: 24px; }
+
+.intro-card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 24px; margin-bottom: 24px; }
+.intro-card h2 { font-size: 20px; margin-bottom: 8px; }
+.intro-card p { color: var(--muted); }
+.steps { display: flex; gap: 16px; margin-top: 16px; }
+.step { flex: 1; background: #f0f3f6; border-radius: 8px; padding: 12px; text-align: center; }
+.step .num { width: 28px; height: 28px; background: var(--accent); color: #fff; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px; margin-bottom: 6px; }
+.step .label { font-size: 13px; font-weight: 600; }
+
+.section-title { font-size: 18px; font-weight: 600; margin: 24px 0 12px; display: flex; align-items: center; gap: 8px; }
+.section-title .badge { background: #ddf4ff; color: var(--accent); padding: 2px 10px; border-radius: 10px; font-size: 12px; }
+
+.brain-section { background: var(--card); border: 1px solid var(--border); border-radius: 12px; margin-bottom: 20px; overflow: hidden; }
+.brain-section .header { padding: 14px 20px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+.brain-section .header h3 { font-size: 16px; }
+.brain-section .header .bregma { color: var(--muted); font-size: 14px; }
+
+.brain-content { display: grid; grid-template-columns: 1fr 1fr; }
+.brain-image { padding: 20px; display: flex; align-items: center; justify-content: center; background: #f6f8fa; min-height: 300px; position: relative; }
+.brain-image svg { width: 100%; max-width: 400px; }
+
+.region-list { padding: 16px; }
+.region-item { display: flex; align-items: flex-start; gap: 10px; padding: 10px 12px; border-radius: 8px; margin-bottom: 4px; cursor: pointer; transition: background 0.15s; }
+.region-item:hover { background: #f0f3f6; }
+.region-item.checked { background: #dafbe1; }
+.region-item input[type="checkbox"] { margin-top: 3px; width: 18px; height: 18px; accent-color: var(--green); cursor: pointer; }
+.region-item .info { flex: 1; }
+.region-item .rname { font-weight: 600; font-size: 14px; }
+.region-item .rdesc { font-size: 12px; color: var(--muted); }
+.region-item .color-dot { width: 14px; height: 14px; border-radius: 50%; margin-top: 3px; flex-shrink: 0; border: 1px solid rgba(0,0,0,0.1); }
+.region-item .note-input { width: 100%; margin-top: 6px; padding: 4px 8px; border: 1px solid var(--border); border-radius: 4px; font-size: 12px; display: none; }
+.region-item.checked .note-input { display: block; }
+
+.priority-select { padding: 2px 6px; border: 1px solid var(--border); border-radius: 4px; font-size: 12px; background: #fff; }
+
+.export-bar { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 20px; margin-top: 24px; display: flex; align-items: center; justify-content: space-between; position: sticky; bottom: 12px; box-shadow: 0 -2px 12px rgba(0,0,0,0.08); }
+.export-bar .count { font-size: 16px; font-weight: 600; }
+.export-bar .count span { color: var(--green); }
+.btn { padding: 10px 24px; border-radius: 8px; border: none; cursor: pointer; font-size: 14px; font-weight: 600; }
+.btn-primary { background: var(--accent); color: #fff; }
+.btn-primary:hover { background: #0550ae; }
+.btn-secondary { background: #f0f3f6; color: var(--text); margin-right: 8px; }
+
+@media (max-width: 768px) {
+  .brain-content { grid-template-columns: 1fr; }
+  .steps { flex-direction: column; }
+}
 </style>
 </head>
 <body>
 
-<div class="header">
-  <div class="logo">🧠</div>
-  <div>
-    <h1>ROI Annotation Portal</h1>
-    <div class="subtitle">Schüle Lab α-Synuclein Study — Allen CCFv3 Atlas — Select regions for ABBA registration & SITP bridge</div>
-  </div>
-  <div style="margin-left:auto">
-    <span class="count" id="roi-count">0</span> ROIs selected
+<div class="top-bar">
+  <span style="font-size:22px">🧠</span>
+  <h1>Brain Region Selection</h1>
+  <span class="tag">Schüle Lab</span>
+  <span style="margin-left:auto; font-size:13px; opacity:0.7">α-Synuclein Mouse Study — Allen CCFv3 Atlas</span>
+</div>
+
+<div class="container">
+
+<div class="intro-card">
+  <h2>What we need from you</h2>
+  <p>We're building a bridge between our MRI functional connectivity data and the Xenium spatial transcriptomics data. To do this, we need you to <strong>select which brain regions matter most</strong> for this study. Your selections will guide which regions we focus the atlas registration and cross-modal analysis on.</p>
+  <div class="steps">
+    <div class="step"><div class="num">1</div><div class="label">Review the brain regions below</div></div>
+    <div class="step"><div class="num">2</div><div class="label">Check the regions you care about</div></div>
+    <div class="step"><div class="num">3</div><div class="label">Add notes on why (optional)</div></div>
+    <div class="step"><div class="num">4</div><div class="label">Export your selections</div></div>
   </div>
 </div>
 
-<div class="layout">
-  <!-- LEFT: Region Browser -->
-  <div class="panel" id="browser-panel">
-    <h2>🔍 Brain Regions</h2>
-    <input type="text" class="search" id="search" placeholder="Search regions (e.g. striatum, SNc, VTA...)">
-    <div id="region-list"></div>
+<!-- STRIATUM LEVEL -->
+<div class="section-title">Striatum Level <span class="badge">Bregma +0.5 mm</span></div>
+<div class="brain-section">
+  <div class="header">
+    <h3>Coronal Section — Striatum & Cortex</h3>
+    <span class="bregma">This is where our Xenium striatum sections come from (14 sections)</span>
   </div>
+  <div class="brain-content">
+    <div class="brain-image">
+      <svg viewBox="0 0 400 320" xmlns="http://www.w3.org/2000/svg">
+        <!-- Brain outline -->
+        <ellipse cx="200" cy="160" rx="180" ry="140" fill="#f0e6d3" stroke="#8b7355" stroke-width="2"/>
+        <!-- Cortex -->
+        <path d="M 40 120 Q 200 20 360 120 Q 340 60 200 40 Q 60 60 40 120" fill="#98c379" stroke="#5a8a42" stroke-width="1.5" class="region-svg" data-region="CTX" opacity="0.7"/>
+        <text x="200" y="75" text-anchor="middle" font-size="11" fill="#2d5016" font-weight="600">Cortex (SSp, MOp, ACA)</text>
+        <!-- Striatum L -->
+        <ellipse cx="140" cy="145" rx="45" ry="35" fill="#e06c75" stroke="#a0444a" stroke-width="1.5" class="region-svg" data-region="CP" opacity="0.7"/>
+        <text x="140" y="148" text-anchor="middle" font-size="10" fill="#5a1a1e" font-weight="600">Striatum</text>
+        <!-- Striatum R -->
+        <ellipse cx="260" cy="145" rx="45" ry="35" fill="#e06c75" stroke="#a0444a" stroke-width="1.5" class="region-svg" data-region="CP" opacity="0.7"/>
+        <text x="260" y="148" text-anchor="middle" font-size="10" fill="#5a1a1e" font-weight="600">Striatum</text>
+        <!-- Septum -->
+        <ellipse cx="200" cy="155" rx="15" ry="25" fill="#c678dd" stroke="#8a4baa" stroke-width="1" opacity="0.6"/>
+        <text x="200" y="158" text-anchor="middle" font-size="8" fill="#4a1a6a">Sep</text>
+        <!-- NAc -->
+        <ellipse cx="160" cy="195" rx="25" ry="15" fill="#e5c07b" stroke="#b8963a" stroke-width="1.5" class="region-svg" data-region="ACB" opacity="0.7"/>
+        <text x="160" y="198" text-anchor="middle" font-size="9" fill="#5a4010" font-weight="600">NAc</text>
+        <ellipse cx="240" cy="195" rx="25" ry="15" fill="#e5c07b" stroke="#b8963a" stroke-width="1.5" opacity="0.7"/>
+        <text x="240" y="198" text-anchor="middle" font-size="9" fill="#5a4010" font-weight="600">NAc</text>
+        <!-- Corpus callosum -->
+        <path d="M 80 115 Q 200 100 320 115" fill="none" stroke="#56b6c2" stroke-width="3" opacity="0.5"/>
+        <text x="200" y="110" text-anchor="middle" font-size="8" fill="#2a7a8a">cc</text>
+        <!-- Anterior commissure -->
+        <ellipse cx="200" cy="210" rx="12" ry="6" fill="#56b6c2" stroke="#2a7a8a" stroke-width="1" opacity="0.5"/>
+        <!-- Ventricles -->
+        <path d="M 188 120 L 188 170 Q 190 178 195 178 Q 200 178 200 170 L 200 120" fill="#b0d4f1" stroke="#6a9bc5" stroke-width="1" opacity="0.6"/>
+        <path d="M 200 120 L 200 170 Q 200 178 205 178 Q 210 178 212 170 L 212 120" fill="#b0d4f1" stroke="#6a9bc5" stroke-width="1" opacity="0.6"/>
+        <!-- Insular cortex -->
+        <path d="M 50 130 Q 60 150 55 180" fill="none" stroke="#d19a66" stroke-width="4" opacity="0.6" class="region-svg" data-region="AI"/>
+        <text x="42" y="158" text-anchor="middle" font-size="8" fill="#8a5a2a" transform="rotate(-90,42,158)">Insula</text>
+        <path d="M 350 130 Q 340 150 345 180" fill="none" stroke="#d19a66" stroke-width="4" opacity="0.6"/>
+        <!-- Labels -->
+        <text x="200" y="310" text-anchor="middle" font-size="10" fill="#8b7355">Bregma ≈ +0.5 mm — Coronal</text>
+      </svg>
+    </div>
+    <div class="region-list" id="striatum-regions"></div>
+  </div>
+</div>
 
-  <!-- CENTER: Atlas Viewer -->
-  <div class="viewer">
-    <div class="viewer-label">Allen Mouse Brain Reference Atlas — Click regions in the left panel to annotate. Interactive 3D viewer below.</div>
-    <iframe id="atlas-frame" src="https://atlas.brain-map.org/atlas?atlas=2#atlas=2&plate=100960440&structure=&x=5279.666748046875&y=3743.666748046875&zoom=-3&resolution=16.75&z=5&annotation=true" allow="fullscreen"></iframe>
+<!-- MESENCEPHALON LEVEL -->
+<div class="section-title">Mesencephalon Level <span class="badge">Bregma −3.0 mm</span></div>
+<div class="brain-section">
+  <div class="header">
+    <h3>Coronal Section — Midbrain & Substantia Nigra</h3>
+    <span class="bregma">This is where our Xenium mesencephalon sections come from (8 sections)</span>
   </div>
+  <div class="brain-content">
+    <div class="brain-image">
+      <svg viewBox="0 0 400 340" xmlns="http://www.w3.org/2000/svg">
+        <!-- Brain outline -->
+        <ellipse cx="200" cy="160" rx="170" ry="135" fill="#f0e6d3" stroke="#8b7355" stroke-width="2"/>
+        <!-- Cortex -->
+        <path d="M 50 130 Q 200 30 350 130 Q 330 70 200 50 Q 70 70 50 130" fill="#98c379" stroke="#5a8a42" stroke-width="1.5" opacity="0.6"/>
+        <text x="200" y="80" text-anchor="middle" font-size="11" fill="#2d5016" font-weight="600">Cortex (RSP, Visual)</text>
+        <!-- Hippocampus L -->
+        <path d="M 90 120 Q 120 100 160 120 Q 165 145 140 155 Q 100 150 90 120" fill="#61afef" stroke="#3a7bbf" stroke-width="1.5" class="region-svg" data-region="HIP" opacity="0.7"/>
+        <text x="125" y="138" text-anchor="middle" font-size="9" fill="#1a4a7a" font-weight="600">Hipp</text>
+        <!-- Hippocampus R -->
+        <path d="M 310 120 Q 280 100 240 120 Q 235 145 260 155 Q 300 150 310 120" fill="#61afef" stroke="#3a7bbf" stroke-width="1.5" opacity="0.7"/>
+        <text x="275" y="138" text-anchor="middle" font-size="9" fill="#1a4a7a" font-weight="600">Hipp</text>
+        <!-- Thalamus -->
+        <ellipse cx="200" cy="150" rx="50" ry="30" fill="#d19a66" stroke="#9a6a36" stroke-width="1.5" class="region-svg" data-region="TH" opacity="0.6"/>
+        <text x="200" y="153" text-anchor="middle" font-size="10" fill="#5a3a16" font-weight="600">Thalamus</text>
+        <!-- Hypothalamus -->
+        <ellipse cx="200" cy="200" rx="30" ry="18" fill="#c678dd" stroke="#8a4baa" stroke-width="1.5" class="region-svg" data-region="HY" opacity="0.6"/>
+        <text x="200" y="203" text-anchor="middle" font-size="9" fill="#4a1a6a" font-weight="600">Hyp</text>
+        <!-- PAG -->
+        <ellipse cx="200" cy="185" rx="12" ry="10" fill="#abb2bf" stroke="#6a6f7a" stroke-width="1" opacity="0.5"/>
+        <text x="200" y="188" text-anchor="middle" font-size="7" fill="#3a3f4a">PAG</text>
+        <!-- VTA -->
+        <ellipse cx="200" cy="225" rx="20" ry="10" fill="#56b6c2" stroke="#2a8a96" stroke-width="1.5" class="region-svg" data-region="VTA" opacity="0.8"/>
+        <text x="200" y="228" text-anchor="middle" font-size="9" fill="#0a4a52" font-weight="700">VTA</text>
+        <!-- SNc L -->
+        <path d="M 120 225 Q 140 215 165 220 Q 170 235 150 240 Q 125 238 120 225" fill="#ff6b6b" stroke="#cc3333" stroke-width="2" class="region-svg" data-region="SNc" opacity="0.85"/>
+        <text x="145" y="233" text-anchor="middle" font-size="9" fill="#660000" font-weight="700">SNc</text>
+        <!-- SNc R -->
+        <path d="M 280 225 Q 260 215 235 220 Q 230 235 250 240 Q 275 238 280 225" fill="#ff6b6b" stroke="#cc3333" stroke-width="2" opacity="0.85"/>
+        <text x="255" y="233" text-anchor="middle" font-size="9" fill="#660000" font-weight="700">SNc</text>
+        <!-- SNr L -->
+        <path d="M 110 240 Q 130 235 160 240 Q 165 255 140 258 Q 115 255 110 240" fill="#ff9999" stroke="#cc6666" stroke-width="1.5" class="region-svg" data-region="SNr" opacity="0.7"/>
+        <text x="138" y="250" text-anchor="middle" font-size="8" fill="#880000" font-weight="600">SNr</text>
+        <!-- SNr R -->
+        <path d="M 290 240 Q 270 235 240 240 Q 235 255 260 258 Q 285 255 290 240" fill="#ff9999" stroke="#cc6666" stroke-width="1.5" opacity="0.7"/>
+        <text x="262" y="250" text-anchor="middle" font-size="8" fill="#880000" font-weight="600">SNr</text>
+        <!-- Cerebral peduncle -->
+        <path d="M 130 260 Q 150 270 170 265" fill="none" stroke="#8b7355" stroke-width="3" opacity="0.4"/>
+        <path d="M 270 260 Q 250 270 230 265" fill="none" stroke="#8b7355" stroke-width="3" opacity="0.4"/>
+        <!-- Aqueduct -->
+        <circle cx="200" cy="172" r="5" fill="#b0d4f1" stroke="#6a9bc5" stroke-width="1"/>
+        <!-- Labels -->
+        <text x="200" y="330" text-anchor="middle" font-size="10" fill="#8b7355">Bregma ≈ −3.0 mm — Coronal (Mesencephalon)</text>
+      </svg>
+    </div>
+    <div class="region-list" id="midbrain-regions"></div>
+  </div>
+</div>
 
-  <!-- RIGHT: Selected ROIs -->
-  <div class="right-panel" id="right-panel">
-    <h2>📌 Selected ROIs</h2>
-    <div id="selected-list"></div>
-    <button class="btn btn-export" onclick="exportCSV()">📥 Export ROIs as CSV</button>
+<!-- ADDITIONAL REGIONS -->
+<div class="section-title">Additional Regions <span class="badge">Whole-brain FC networks</span></div>
+<div class="brain-section">
+  <div class="header">
+    <h3>Regions identified from fMRI functional connectivity analysis</h3>
+    <span class="bregma">These regions showed altered connectivity between A53T and FVB genotypes</span>
   </div>
+  <div class="brain-content" style="grid-template-columns: 1fr">
+    <div class="region-list" id="fc-regions" style="column-count: 2; column-gap: 16px;"></div>
+  </div>
+</div>
+
+<!-- EXPORT BAR -->
+<div class="export-bar" id="export-bar">
+  <div class="count"><span id="count">0</span> regions selected</div>
+  <div>
+    <button class="btn btn-secondary" onclick="selectAll()">Select All Suggested</button>
+    <button class="btn btn-primary" onclick="exportCSV()">📥 Download Selections (CSV)</button>
+  </div>
+</div>
+
 </div>
 
 <script>
-// Allen CCFv3 ontology (loaded from API)
-let allRegions = [];
-let selectedROIs = {};
-
-// Suggested ROIs for alpha-synuclein PD study
-const SUGGESTED = {
-  "SNc": { priority: "Primary", notes: "DA neuron loss in PD — primary site" },
-  "SNr": { priority: "Primary", notes: "GABAergic output nucleus" },
-  "VTA": { priority: "Primary", notes: "DA neurons, less vulnerable than SNc" },
-  "CP":  { priority: "Primary", notes: "Striatum — nigrostriatal DA target" },
-  "ACB": { priority: "Primary", notes: "Nucleus accumbens, ventral striatum" },
-  "SSp": { priority: "Secondary", notes: "Somatomotor network (strongest FC signal)" },
-  "MOp": { priority: "Secondary", notes: "Primary motor cortex" },
-  "RSP": { priority: "Secondary", notes: "Default mode-like network in mice" },
-  "ACA": { priority: "Secondary", notes: "Anterior cingulate, FC hub" },
-  "AI":  { priority: "Secondary", notes: "Insular cortex, lateral network" },
-  "HIP": { priority: "Tertiary", notes: "Spp1 (DAM marker) SVG enrichment" },
-  "TH":  { priority: "Tertiary", notes: "Thalamo-cortical connectivity" },
-  "CB":  { priority: "Tertiary", notes: "Brainstem-cerebellar circuits" },
-  "HY":  { priority: "Tertiary", notes: "Autonomic, non-motor PD symptoms" },
+const REGIONS = {
+  striatum: [
+    { id: "CP", name: "Striatum (Caudate-Putamen)", desc: "Primary target of nigrostriatal dopamine projection. Shows compensatory hyperconnectivity at 6 months in A53T.", color: "#e06c75", suggested: true, priority: "Primary" },
+    { id: "ACB", name: "Nucleus Accumbens", desc: "Ventral striatum. Mesolimbic dopamine target. Relevant for non-motor PD symptoms.", color: "#e5c07b", suggested: true, priority: "Primary" },
+    { id: "SSp", name: "Primary Somatosensory Cortex", desc: "Core of the somatomotor network — strongest FC signal in our data.", color: "#98c379", suggested: true, priority: "Secondary" },
+    { id: "MOp", name: "Primary Motor Cortex", desc: "Somatomotor network. Direct cortical output for movement.", color: "#98c379", suggested: true, priority: "Secondary" },
+    { id: "ACA", name: "Anterior Cingulate Area", desc: "FC hub in the medial prefrontal cortex. Default mode-like network.", color: "#98c379", suggested: true, priority: "Secondary" },
+    { id: "AI", name: "Agranular Insular Area", desc: "Lateral cortical network. Interoception and autonomic processing.", color: "#d19a66", suggested: false, priority: "Tertiary" },
+  ],
+  midbrain: [
+    { id: "SNc", name: "Substantia Nigra, compact part", desc: "⭐ THE region of PD. Contains DA neurons that degenerate. Dkk3 SVG marks the most vulnerable subpopulation here (Fukusumi 2015).", color: "#ff6b6b", suggested: true, priority: "Primary" },
+    { id: "SNr", name: "Substantia Nigra, reticular part", desc: "GABAergic output nucleus adjacent to SNc. Major basal ganglia output station.", color: "#ff9999", suggested: true, priority: "Primary" },
+    { id: "VTA", name: "Ventral Tegmental Area", desc: "DA neurons projecting to cortex and NAc. Less vulnerable than SNc in PD.", color: "#56b6c2", suggested: true, priority: "Primary" },
+    { id: "HIP", name: "Hippocampal Formation", desc: "Spp1 (DAM marker) shows A53T-specific spatial patterning here. Memory circuits.", color: "#61afef", suggested: true, priority: "Tertiary" },
+    { id: "TH", name: "Thalamus", desc: "Relay station for cortical-subcortical connectivity. Thalamo-cortical network.", color: "#d19a66", suggested: true, priority: "Tertiary" },
+    { id: "HY", name: "Hypothalamus", desc: "Autonomic regulation. Relevant to non-motor PD symptoms (sleep, autonomic dysfunction).", color: "#c678dd", suggested: true, priority: "Tertiary" },
+    { id: "PAG", name: "Periaqueductal Gray", desc: "Pain modulation and autonomic control. Receives DA input.", color: "#abb2bf", suggested: false, priority: "Tertiary" },
+  ],
+  fc: [
+    { id: "RSP", name: "Retrosplenial Area", desc: "Core of the mouse default mode-like network. Often disrupted in neurodegeneration models.", color: "#98c379", suggested: true, priority: "Secondary" },
+    { id: "CB", name: "Cerebellum", desc: "Brainstem-cerebellar circuits. Increasing evidence of cerebellar involvement in PD.", color: "#abb2bf", suggested: true, priority: "Tertiary" },
+    { id: "GPe", name: "Globus Pallidus, external", desc: "Indirect pathway of basal ganglia. Receives striatal input.", color: "#e5c07b", suggested: false, priority: "Tertiary" },
+    { id: "GPi", name: "Globus Pallidus, internal", desc: "Direct pathway output. Major basal ganglia output to thalamus.", color: "#e5c07b", suggested: false, priority: "Tertiary" },
+    { id: "STN", name: "Subthalamic Nucleus", desc: "Hyperdirect pathway. Target of deep brain stimulation in PD patients.", color: "#c678dd", suggested: false, priority: "Tertiary" },
+    { id: "PFC", name: "Prefrontal Cortex (ORB/PL/ILA)", desc: "Executive function. Cognitive decline in PD.", color: "#98c379", suggested: false, priority: "Tertiary" },
+  ]
 };
 
-// Load ontology
-fetch("https://api.brain-map.org/api/v2/structure_graph_download/1.json")
-  .then(r => r.json())
-  .then(data => {
-    function walk(node, depth) {
-      allRegions.push({
-        id: node.id, acronym: node.acronym, name: node.name,
-        color: "#" + (node.color_hex_triplet || "CCCCCC"), depth: Math.min(depth, 4),
-        parent_id: node.parent_structure_id
-      });
-      (node.children || []).forEach(c => walk(c, depth + 1));
-    }
-    walk(data.msg[0], 0);
-    
-    // Pre-select suggested ROIs
-    for (const [acr, info] of Object.entries(SUGGESTED)) {
-      const r = allRegions.find(x => x.acronym === acr);
-      if (r) selectedROIs[acr] = { ...r, ...info };
-    }
-    
-    renderRegions();
-    renderSelected();
-  })
-  .catch(e => {
-    document.getElementById("region-list").innerHTML = `<div class="empty-state"><div class="icon">⚠️</div>Failed to load atlas. Using offline fallback.</div>`;
-  });
+let selections = {};
 
-function renderRegions(filter = "") {
-  const container = document.getElementById("region-list");
-  const q = filter.toLowerCase();
-  
-  // If searching, show flat results. Otherwise show hierarchy (top 3 levels)
-  let items;
-  if (q) {
-    items = allRegions.filter(r => r.acronym.toLowerCase().includes(q) || r.name.toLowerCase().includes(q)).slice(0, 50);
-  } else {
-    items = allRegions.filter(r => r.depth <= 3).slice(0, 200);
+function init() {
+  // Pre-select suggested regions
+  for (const group of Object.values(REGIONS)) {
+    for (const r of group) {
+      if (r.suggested) {
+        selections[r.id] = { ...r, notes: "" };
+      }
+    }
   }
-  
-  container.innerHTML = items.map(r => {
-    const sel = r.acronym in selectedROIs;
-    return `<div class="region-item depth-${r.depth} ${sel ? 'selected' : ''}" onclick="toggleROI('${r.acronym}')">
-      <div class="dot" style="background:${r.color}"></div>
-      <span class="acr">${r.acronym}</span>
-      <span class="name">${r.name}</span>
-      ${sel ? '✓' : ''}
-    </div>`;
-  }).join("");
+  render("striatum-regions", REGIONS.striatum);
+  render("midbrain-regions", REGIONS.midbrain);
+  render("fc-regions", REGIONS.fc);
+  updateCount();
 }
 
-function toggleROI(acronym) {
-  if (acronym in selectedROIs) {
-    delete selectedROIs[acronym];
-  } else {
-    const r = allRegions.find(x => x.acronym === acronym);
-    if (r) selectedROIs[acronym] = { ...r, priority: "Secondary", notes: "" };
-  }
-  renderRegions(document.getElementById("search").value);
-  renderSelected();
-}
-
-function renderSelected() {
-  const container = document.getElementById("selected-list");
-  const count = Object.keys(selectedROIs).length;
-  document.getElementById("roi-count").textContent = count;
-  
-  if (count === 0) {
-    container.innerHTML = `<div class="empty-state"><div class="icon">🎯</div><p>Click regions in the left panel to add them</p></div>`;
-    return;
-  }
-  
-  // Group by priority
-  const groups = { Primary: [], Secondary: [], Tertiary: [] };
-  for (const [acr, r] of Object.entries(selectedROIs)) {
-    (groups[r.priority] || groups.Secondary).push({ acr, ...r });
-  }
-  
-  let html = "";
-  for (const [prio, rois] of Object.entries(groups)) {
-    if (rois.length === 0) continue;
-    const badgeClass = prio === "Primary" ? "badge-primary" : prio === "Secondary" ? "badge-secondary" : "badge-tertiary";
-    html += `<div style="margin:10px 0 5px"><span class="badge ${badgeClass}">${prio} (${rois.length})</span></div>`;
-    for (const r of rois) {
-      html += `<div class="roi-card">
-        <span class="remove" onclick="toggleROI('${r.acr}')">✕ remove</span>
-        <h3>${r.acr} — ${r.name}</h3>
-        <div class="meta">ID: ${r.id} | Color: <span style="color:${r.color}">■</span> ${r.color}</div>
-        <label>Priority</label>
-        <select onchange="selectedROIs['${r.acr}'].priority=this.value; renderSelected()">
+function render(containerId, regions) {
+  const el = document.getElementById(containerId);
+  el.innerHTML = regions.map(r => {
+    const checked = r.id in selections;
+    return `<div class="region-item ${checked ? 'checked' : ''}" onclick="toggle('${r.id}', '${containerId}')">
+      <input type="checkbox" ${checked ? 'checked' : ''} onclick="event.stopPropagation(); toggle('${r.id}', '${containerId}')">
+      <div class="color-dot" style="background:${r.color}"></div>
+      <div class="info">
+        <div class="rname">${r.name} <span style="color:var(--muted); font-weight:400; font-size:12px">(${r.id})</span></div>
+        <div class="rdesc">${r.desc}</div>
+        <select class="priority-select" onclick="event.stopPropagation()" onchange="if(selections['${r.id}']) selections['${r.id}'].priority=this.value" style="margin-top:4px; ${checked ? '' : 'display:none'}">
           <option ${r.priority==='Primary'?'selected':''}>Primary</option>
           <option ${r.priority==='Secondary'?'selected':''}>Secondary</option>
           <option ${r.priority==='Tertiary'?'selected':''}>Tertiary</option>
         </select>
-        <label>Notes</label>
-        <input type="text" value="${r.notes||''}" oninput="selectedROIs['${r.acr}'].notes=this.value" placeholder="Rationale, relevant genes...">
-      </div>`;
+        <input type="text" class="note-input" placeholder="Add a note (optional)..." onclick="event.stopPropagation()" oninput="if(selections['${r.id}']) selections['${r.id}'].notes=this.value" value="${(selections[r.id]||{}).notes||''}">
+      </div>
+    </div>`;
+  }).join("");
+}
+
+function toggle(id, containerId) {
+  if (id in selections) {
+    delete selections[id];
+  } else {
+    const allRegions = [...REGIONS.striatum, ...REGIONS.midbrain, ...REGIONS.fc];
+    const r = allRegions.find(x => x.id === id);
+    if (r) selections[id] = { ...r, notes: "" };
+  }
+  render("striatum-regions", REGIONS.striatum);
+  render("midbrain-regions", REGIONS.midbrain);
+  render("fc-regions", REGIONS.fc);
+  updateCount();
+}
+
+function selectAll() {
+  for (const group of Object.values(REGIONS)) {
+    for (const r of group) {
+      if (r.suggested && !(r.id in selections)) {
+        selections[r.id] = { ...r, notes: "" };
+      }
     }
   }
-  container.innerHTML = html;
+  render("striatum-regions", REGIONS.striatum);
+  render("midbrain-regions", REGIONS.midbrain);
+  render("fc-regions", REGIONS.fc);
+  updateCount();
+}
+
+function updateCount() {
+  document.getElementById("count").textContent = Object.keys(selections).length;
 }
 
 function exportCSV() {
-  let csv = "Acronym,Name,ID,Priority,Notes,Color\n";
-  for (const [acr, r] of Object.entries(selectedROIs)) {
-    csv += `"${acr}","${r.name}",${r.id},"${r.priority}","${(r.notes||'').replace(/"/g,'""')}","${r.color}"\n`;
+  let csv = "Acronym,Name,Priority,Notes,Color,Description\n";
+  for (const [id, r] of Object.entries(selections)) {
+    csv += `"${id}","${r.name}","${r.priority}","${(r.notes||'').replace(/"/g,'""')}","${r.color}","${(r.desc||'').replace(/"/g,'""')}"\n`;
   }
   const blob = new Blob([csv], { type: "text/csv" });
-  const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
-  a.href = url; a.download = "roi_selections.csv"; a.click();
-  URL.revokeObjectURL(url);
+  a.href = URL.createObjectURL(blob);
+  a.download = "schuele_roi_selections.csv";
+  a.click();
 }
 
-document.getElementById("search").addEventListener("input", e => renderRegions(e.target.value));
+init();
 </script>
 </body>
 </html>
